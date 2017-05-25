@@ -62,11 +62,13 @@ module.exports = {
 
   /**
    * Creates a new constraint, given current component data. The CANNON.js constructors are a bit
-   * different for each constraint type.
+   * different for each constraint type. A `.type` property is added to each constraint, because
+   * `instanceof` checks are not reliable for some types. These types are needed for serialization.
    * @return {CANNON.Constraint}
    */
   createConstraint: function () {
-    var data = this.data,
+    var constraint,
+        data = this.data,
         pivot = new CANNON.Vec3(data.pivot.x, data.pivot.y, data.pivot.z),
         targetPivot = new CANNON.Vec3(data.targetPivot.x, data.targetPivot.y, data.targetPivot.z),
         axis = new CANNON.Vec3(data.axis.x, data.axis.y, data.axis.z),
@@ -74,20 +76,24 @@ module.exports = {
 
     switch (data.type) {
       case 'lock':
-        return new CANNON.LockConstraint(
+        constraint = new CANNON.LockConstraint(
           this.el.body,
           data.target.body,
           {maxForce: data.maxForce}
         );
+        constraint.type = 'LockConstraint';
+        break;
       case 'distance':
-        return new CANNON.DistanceConstraint(
+        constraint = new CANNON.DistanceConstraint(
           this.el.body,
           data.target.body,
           data.distance,
           data.maxForce
         );
+        constraint.type = 'DistanceConstraint';
+        break;
       case 'hinge':
-        return new CANNON.HingeConstraint(
+        constraint = new CANNON.HingeConstraint(
           this.el.body,
           data.target.body, {
             pivotA: pivot,
@@ -96,8 +102,10 @@ module.exports = {
             axisB: targetAxis,
             maxForce: data.maxForce
           });
+        constraint.type = 'HingeConstraint';
+        break;
       case 'coneTwist':
-        return new CANNON.ConeTwistConstraint(
+        constraint = new CANNON.ConeTwistConstraint(
           this.el.body,
           data.target.body, {
             pivotA: pivot,
@@ -106,15 +114,20 @@ module.exports = {
             axisB: targetAxis,
             maxForce: data.maxForce
           });
+        constraint.type = 'ConeTwistConstraint';
+        break;
       case 'pointToPoint':
-        return new CANNON.PointToPointConstraint(
+        constraint = new CANNON.PointToPointConstraint(
           this.el.body,
           pivot,
           data.target.body,
           targetPivot,
           data.maxForce);
+        constraint.type = 'PointToPointConstraint';
+        break;
       default:
         throw new Error('[constraint] Unexpected type: ' + data.type);
     }
+    return constraint;
   }
 };
