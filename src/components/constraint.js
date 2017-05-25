@@ -1,6 +1,6 @@
 var CANNON = require('cannon');
 
-module.exports = {
+module.exports = AFRAME.registerComponent('constraint', {
   dependencies: ['dynamic-body'],
 
   multiple: true,
@@ -130,4 +130,4 @@ module.exports = {
     }
     return constraint;
   }
-};
+});
